@@ -1,4 +1,4 @@
-Run In Bigquery
+--Run In Bigquery
 
 select location, max (total_deaths) as TotalDeathCount
 from `portfolio-387612.covid_death.covid2`
