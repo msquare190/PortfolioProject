@@ -1,0 +1,164 @@
+---
+title: "Education and Marital Stability"
+author: "MATTHEW MICHAEL"
+format: html
+html:
+    cold-fold: true
+    code-link: true
+    embed-resources: true
+    toc: true
+    number-sections: true
+
+
+editor: visual
+---
+
+# Introduction
+
+In this task, I looked at the patterns of married status among women with a master's degree or higher. My main goal is to figure out the rate at which divorced/separated are within this group and to compare it with other marital status, such as being married. Also, to prove the common notion that women greater levels of education are associated with unstable marriages, or relationship status changes over time.
+
+## Data Exploration
+
+This data was collected during a household census conducted in England in 2021. Consisting of 9 columns which include:
+
+-   *ID - Household identification number.*
+
+-   *Person_ID - Individual ID number for persons in the household.*
+
+-   *Age - Age.*
+
+-   *Mar_Stat - Marital Status.*
+
+-   *INC - Annual income in pounds.*
+
+-   *Female - A binary variable which signals whether or not the individual has identified as female (0 = yes).*
+
+-   *H8 - A binary variable signaling the response to question H8 on the census Are all the rooms in this accommodation, including the kitchen, bathroom and toilet, behind a door that only this household can use?; 1=no, 0=yes.*
+
+-   *Eth - Ethnicity*
+
+-   *Highest Ed - Highest level of study.*
+
+##### I installed all the necessary libraries needed for this task below.
+
+```{r, echo=FALSE,  message = FALSE, warning = FALSE, results = 'hide'}
+
+#Importing all the necessary libraries
+
+library(tidyverse)
+library(ggplot2)
+library(ggthemes)
+library(dplyr)
+```
+
+Then i import the data-set (data_R)
+
+```{r, echo=FALSE,  message = FALSE, warning = FALSE, results = 'hide'}
+
+data_R <- read_csv("C:/Users/msqua/Downloads/data_R.csv")
+```
+
+##### My goal is to examine if female with masters or higher education are either divorced/separate or married
+
+I mutate the Female column by specifying (female as 0 and male as 1). I also renamed the column to Gender into a new table cleaned_data
+
+```{r, echo=FALSE}
+
+cleaned_data <- data_R |>
+  mutate(Female = ifelse(Female == 0, "female", "male")) |>
+  rename(Gender = Female, Highest_Ed = `Highest Ed`)
+
+```
+
+I removed null values (na) into a new table census_data and also count the total numbers of Divorced, Separated, and married
+
+```{r, echo=FALSE}
+
+# Remove null values (na)
+census_data <- na.omit(cleaned_data)
+
+# Total number of Divorced (2177)
+Number_of_Divorced <- sum(census_data$Mar_Stat == "Divorced")
+
+# Total number of Separated (433)
+Number_of_Separated <- sum(census_data$Mar_Stat == "Separated")
+
+# Total number of married (11624)
+Number_of_married <- sum(census_data$Mar_Stat == "married")
+
+```
+
+I merged divorced and separated together in a new column Mar_class into the final table i am working with df
+
+```{r, echo=FALSE}
+# i merged divorced and separated in a new column
+df <- census_data |>
+  mutate(Mar_class = ifelse(Mar_Stat %in% c("Divorced", "Separated"), 
+                                        "Divorced/Separated", Mar_Stat))
+
+```
+
+## Visualization and Findings
+
+```{r}
+#| echo: false
+
+# Filter for women with "Masters or higher" education
+df_filtered <- df |>
+  filter(Gender == "female" & Highest_Ed == "Masters or higher")
+
+# Age distribution plot
+ggplot(df_filtered, aes(x = Age)) +
+  geom_histogram(binwidth = 5, fill = "skyblue", color = "black") +
+  labs(title = "Age Distribution of Women with Master's Degree or Higher", x = "Age", y = "Count")
+```
+
+The age distribution of women with a master's degree or higher is shown in this histogram. The data shows a rise between the ages of 45 and 55, indicating that a significant percentage of highly educated women are in this age range. The distribution indicates that the majority of this population is in middle adulthood, with fewer people in the younger (under 30) and older (over 70) age groups.
+
+```{r, echo=FALSE}
+
+# Plot 2: Age Distribution of Married vs. Divorced/Separated
+ggplot(df_filtered %>% filter(Mar_class %in% c("married", "Divorced/Separated")), aes(x = Age, fill = Mar_class)) +
+  geom_histogram(binwidth = 5, position = "stack") +
+  labs(title = "Age Distribution of Married vs. Divorced/Separated", x = "Age", y = "Count") +
+  scale_fill_brewer(palette = "Set3")
+```
+
+This histogram displays the age distribution of married or divorced/separated women with a master's degree or above. Married women are more common in all age groups, but particularly in the 45–55 age range. The number of divorced or separated women, on the other hand, is smaller but falls within similar range, suggesting that marriage is more common among highly educated women in this age group.
+
+```{r, echo=FALSE}
+
+# Filter the data for females with "Masters or higher" education and marital status of either married or divorced/separated
+df_filtered_masters <- df |>
+  filter(Gender == "female" & Highest_Ed == "Masters or higher" & Mar_class %in% c("married", "Divorced/Separated"))
+
+# Plot Mar_class for females with Masters or higher education
+ggplot(df_filtered_masters, aes(x = Mar_class, fill = Mar_class)) +
+  geom_bar() +
+  labs(title = "Marital Status (Married vs. Divorced/Separated) for Women with Master's Degree or Higher",
+       x = "Marital Status",
+       y = "Count") +
+  scale_fill_brewer(palette = "Set2") +
+  theme_minimal()
+
+```
+
+The popular misconception that women who hold a master's degree or higher are more likely to face marital instability or divorce is refuted by this report. According to the visualization, a sizable percentage of women in this educated group stay married, indicating that having more knowledge does not always translate into a larger chance of divorce. This research dispels the misconception by showing that women's higher levels of education do not always result in divorce. Rather, it might represent a more stable or balanced marital pattern than is generally believed.
+
+### Adittional refernce that back my findings
+
+According to Pew Research Center(2015)
+
+"The likelihood of a marriage lasting at least 20 years is notably higher among women with a bachelor’s degree or more education compared with those who have less education."
+
+## Conlusion
+
+In conclusion, the data presented in this analysis shed light on the notion that women's greater levels of education are associated with unstable marriages. Contrary to popular assumption, the evidence indicates that women who have earned a master's degree or higher have a high rate of marital stability; many of them stay married instead of divorcing or being separated. According to study from the Pew study Center, women with higher levels of education are more likely to have happy, long-lasting relationships.
+
+The significance of allowing women the right to education a right that is still restricted in some communities and religious contexts is highlighted by these findings. Giving women access to higher education promotes secure and satisfying marriages in addition to their personal development and financial freedom. Societies can promote individual achievement and stronger family groups by guaranteeing equal educational opportunities, highlighting the significant social advantages of educating women.
+
+## Reference
+
+Parker, K., & Stepler, R. (2015, December 4). Education and Marriage: A Comparison by Race and Ethnicity. Pew Research Center.
+
+https://www.pewresearch.org/short-reads/2015/12/04/education-and-marriage/
